@@ -2,35 +2,34 @@
 {
     static void Main(string[] args)
     {
-        int n = int.Parse(Console.ReadLine());
-
         List<int> commands = Console.ReadLine().Split().Select(int.Parse).ToList();
 
-        Stack<int> stack = new Stack<int>();
+        List<int> list = Console.ReadLine().Split().Select(int.Parse).ToList();
 
-        for (int i = 0; i < n; i++)
+        Queue<int> queue = new Queue<int>(list);
+
+        int length = queue.Count;
+
+        for (int i = 0; i < commands[1]; i++)
         {
-
-            if (commands[0] == 1)
+            if (length >= i)
             {
-                stack.Push(commands[1]);
-            }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
-            else if (commands[0] == 2 && stack.Any())
-            {
-                Console.WriteLine(stack.Pop());
+                queue.Dequeue();
             }
-            else if (commands[0] == 3 && stack.Any())
-            {
-                Console.WriteLine(stack.Max());
-            }
-            else if (commands[0] == 4 && stack.Any())
-            {
-                Console.WriteLine(stack.Min());
-            }
-
-            commands = Console.ReadLine().Split().Select(int.Parse).ToList();
         }
 
-        Console.WriteLine(string.Join(", ", stack));
+        if (queue.Contains(commands[2]))
+        {
+            Console.WriteLine($"true");
+        }
+        else if (!queue.Contains(commands[2]) && queue.Any())
+        {
+            Console.WriteLine(queue.Min());
+        }
+        else if (queue.Count == 0)
+        {
+            Console.WriteLine(0);
+        }
+
     }
 }
