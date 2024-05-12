@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Xml.Linq;
 
 class Program
 {
@@ -9,63 +10,110 @@ class Program
 
         string commands = Console.ReadLine();
 
-        List<string> list = new List<string>();
+        StringBuilder sb = new StringBuilder();
 
-        Queue<string> queue = new Queue<string>();
+        Queue<string> cars = new Queue<string>();
+        Queue<string> parts = new Queue<string>();
 
+        int currentGreenLightSeconds = greenLightInSeconds;
+        int currentFreeWindowSeconds = freeWindowSeconds;
 
-        int currentGreenLightInSeconds = 0;
-        int currentFreeWindowSeconds = 0;
+        string saveLetter = "";
         int count = 0;
+
 
         while (commands != "END")
         {
-             currentGreenLightInSeconds = greenLightInSeconds;
-             currentFreeWindowSeconds = freeWindowSeconds;
-
-            if (commands != "green")
+            if (commands == "green")
             {
-                list.Add(commands);
-            }
-
-            else if (commands == "green")
-            {
-                for (int i = 0; i < list.Count; i++)
+                //read all the cars in queue
+                for (int i = 0; i < cars.Count; i++)
                 {
-                    if (currentGreenLightInSeconds >= 1)
+                    sb.Clear();
+                    sb.Append(cars.Dequeue());
+                    i--;
+
+                    //make string to char
+                    for (int j = 0; j < sb.Length; j++)
                     {
-                        count++;
-                        for (int j = 0; j < list[i].Length; j++)
-                        {
-                            queue.Enqueue(list[i][j].ToString());
-                        }
+                        parts.Enqueue(sb[j].ToString());
                     }
 
-                    while (queue.Any())
+                    //checks if greenLightSeconds is bigger than 0 
+                    if (currentGreenLightSeconds > 0 && currentGreenLightSeconds + currentFreeWindowSeconds >= parts.Count)
                     {
-                        if (currentGreenLightInSeconds > 0)
+                        count++;
+
+                        for (int j = 0; j < parts.Count; j++)
                         {
-                            currentGreenLightInSeconds--;
-                            queue.Dequeue();
+                            if (currentGreenLightSeconds > 0)
+                            {
+                                saveLetter = parts.Peek();
+                                currentGreenLightSeconds -= parts.Dequeue().Length;
+                                j--;
+                            }
+                            else if (currentFreeWindowSeconds > 0)
+                            {
+                                saveLetter = parts.Peek();
+                                currentFreeWindowSeconds -= parts.Dequeue().Length;
+                                j--;
+                            }
+                            else
+                            {
+                                saveLetter = parts.Dequeue();
+                                Console.WriteLine($"A crash happened!");
+                                Console.WriteLine($"{sb.ToString()} was hit at {parts.Peek()}.");
+                                return;
+                            }
                         }
-                        else if (currentGreenLightInSeconds + currentFreeWindowSeconds > 0 )
+                    }
+                    else if (currentGreenLightSeconds == 0)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        for (int j = 0; j < parts.Count; j++)
                         {
-                            currentFreeWindowSeconds--;
-                            queue.Dequeue();
-                        }
-                        else if (currentGreenLightInSeconds == 0 && currentFreeWindowSeconds == 0)
-                        {
-                            Console.WriteLine($"A crash happened!");
-                            Console.WriteLine($"{list[i]} was hit at {queue.Dequeue()}.");
-                            return;
+
+                            if (currentGreenLightSeconds > 0)
+                            {
+                                saveLetter = parts.Peek();
+                                currentGreenLightSeconds -= parts.Dequeue().Length;
+                                j--;
+                            }
+                            else if (currentFreeWindowSeconds > 0)
+                            {
+                                saveLetter = parts.Peek();
+                                currentFreeWindowSeconds -= parts.Dequeue().Length;
+                                j--;
+                            }
+                            else
+                            {
+                                saveLetter = parts.Dequeue();
+                                Console.WriteLine($"A crash happened!");
+                                Console.WriteLine($"{sb.ToString()} was hit at {saveLetter}.");
+                                return;
+                            }
                         }
                     }
                 }
-                list.Clear();
             }
+
+            else
+            {
+                //new cars on greenlight
+                cars.Enqueue(commands);
+            }
+
+            // reset seconds of greenLight and freeWindow
+            currentGreenLightSeconds = greenLightInSeconds;
+            currentFreeWindowSeconds = freeWindowSeconds;
+
             commands = Console.ReadLine();
         }
-            Console.WriteLine($"Everyone is safe.");
-            Console.WriteLine($"{count} total cars passed the crossroads.");
+
+        Console.WriteLine($"Everyone is safe.");
+        Console.WriteLine($"{count} total cars passed the crossroads.");
     }
 }
